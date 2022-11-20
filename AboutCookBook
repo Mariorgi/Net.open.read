@@ -1,0 +1,87 @@
+#print(file.readlines()) # При использовании методов чтения идет постепенная отчистка буфера
+#print(file.read())
+#print(file.readline())
+def get_file_data(path_cook_book_file):
+    cook_menu = {}
+    item_list = []
+    with open(path_cook_book_file, "r", encoding="utf-8") as file:
+        items_list = file.read().split("\n")
+    dish_name = ''
+    count_ingridient = 0
+    for item in items_list:
+        if item:
+            try:
+                count_ingridient = int(item)
+                continue
+            except ValueError:
+                if not dish_name:
+                    dish_name = item
+                    cook_menu[item] = []
+                    continue
+            if count_ingridient != 0:
+                ingredient_data = item.split("|")
+                cook_menu[dish_name].append({'ingredient_name': ingredient_data[0].strip(),
+                                             'quantity': int(ingredient_data[1]),
+                                             'measure': ingredient_data[2].strip()})
+                count_ingridient -= 1
+                if count_ingridient == 0:
+                    dish_name = ''
+
+    return cook_menu
+
+
+def get_shop_list_by_dishes(dishes, person_count):
+    cook_menu = get_file_data("taskOneAndTwo.txt")
+    all_ingredients = {}
+    if isinstance(dishes, list):
+        for dish in dishes:
+            for ingridient in cook_menu[dish]:
+                all_ingredients[ingridient['ingredient_name']] = {'measure': ingridient["measure"],
+                                                                  'quantity': ingridient["quantity"]*person_count}
+    return all_ingredients
+
+def lenFileStr(files):
+    filesDict = {}
+    for fileName in files:
+        filesDict[fileName] = {}
+        with open(fileName, 'r') as file:
+            fileData = file.readlines()
+            filesDict[fileName]['Len'] = len(fileData)
+            filesDict[fileName]['Data'] = fileData
+
+    sortedFiles = []
+    littleLen = 0
+    for fileName, data in filesDict.items():
+        if littleLen == 0:
+            littleLen = data['Len']
+            sortedFiles.append(fileName)
+        if littleLen > data['Len']:
+            littleLen = data['Len']
+            sortedFiles.insert(0, fileName)
+        if littleLen < data['Len']:
+            index = 0
+            for item in sortedFiles:
+                if filesDict[item]['Len'] <= data['Len']:
+                    index += 1
+                if filesDict[item]['Len'] > data['Len']:
+                    continue
+            sortedFiles.insert(index, fileName)
+
+    for fileName in sortedFiles:
+        with open('output.txt', 'a') as file:
+            file.write(fileName+'\n')
+            file.write(str(filesDict[fileName]['Len'])+'\n')
+            file.write(''.join(filesDict[fileName]['Data'])+'\n')
+
+    return True
+
+
+def main():
+    print(get_file_data("taskOneAndTwo.txt"))
+    print(get_shop_list_by_dishes(['Утка по-пекински'], 10))
+    print(lenFileStr(['5.txt','1.txt','4.txt','3.txt','2.txt']))
+
+
+			
+if __name__ == "__main__":
+    main()
